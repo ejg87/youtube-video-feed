@@ -1,0 +1,297 @@
+/* ---------------------------
+   SEARCH BAR
+---------------------------- */
+#yvf-search-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#yvf-search {
+    flex: 1 1 220px;
+    max-width: 320px;
+    padding: 0.45rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #111;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+#yvf-search::placeholder {
+    color: #777;
+}
+
+.yvf-search-hint {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.yvf-search-results-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+
+
+/* ---------------------------
+   LOADING OVERLAY
+---------------------------- */
+#yvf-wrapper.yvf-is-loading {
+    position: relative;
+    opacity: 0.6;
+}
+
+#yvf-wrapper.yvf-is-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    border-top-color: transparent;
+    animation: yvf-spin 0.8s linear infinite;
+}
+
+@keyframes yvf-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+
+/* ---------------------------
+   GRID LAYOUT
+---------------------------- */
+.yvf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.6rem;
+}
+
+
+
+/* ---------------------------
+   VIDEO CARD
+---------------------------- */
+
+.yvf-item {
+    cursor: pointer;
+    position: relative;
+
+    /* Background with recommended enhancement */
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(0, 0, 0, 0.65) 70%
+    );
+
+    color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+
+    /* High-contrast border */
+    border: 1px solid rgba(255, 255, 255, 0.09);
+
+    /* Soft glow + shadow */
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.65),
+        0 0 12px rgba(255, 255, 255, 0.05);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.yvf-item:hover {
+    transform: translateY(-6px);
+
+    border-color: rgba(255, 255, 255, 0.2);
+
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.85),
+        0 0 18px rgba(255, 255, 255, 0.12);
+}
+
+
+
+/* ---------------------------
+   THUMBNAIL
+---------------------------- */
+
+.yvf-thumb img {
+    display: block;
+    width: 100%;
+    height: auto;
+
+    /* Slight contrast boost */
+    filter: brightness(1.08);
+}
+
+
+
+/* ---------------------------
+   VIDEO INFO
+---------------------------- */
+.yvf-info {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(5px);
+}
+
+.yvf-info h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.yvf-views {
+    font-size: 0.82rem;
+    color: #ccc;
+}
+
+
+
+/* ---------------------------
+   PAGINATION
+---------------------------- */
+.yvf-pagination {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 0.92rem;
+}
+
+.yvf-page-link {
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.yvf-page-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #777;
+}
+
+.yvf-page-current {
+    opacity: 0.85;
+}
+
+
+
+/* ---------------------------
+   MODAL SYSTEM
+---------------------------- */
+body .yvf-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+}
+
+body .yvf-modal.yvf-open {
+    display: block;
+}
+
+/* Backdrop */
+body .yvf-modal .yvf-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 9998;
+}
+
+/* Modal window */
+body .yvf-modal .yvf-modal-content {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 9999;
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(255, 255, 255, 0.08);
+}
+
+/* Close */
+.yvf-close {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    cursor: pointer;
+    font-size: 2rem;
+    line-height: 1;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+}
+.yvf-close:hover {
+    opacity: 1;
+}
+
+/* Modal content */
+.yvf-modal-body {
+    padding: 1rem;
+}
+
+.yvf-player-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+}
+
+.yvf-player-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Metadata */
+.yvf-modal-meta {
+    margin-top: 0.75rem;
+}
+
+#yvf-modal-title {
+    font-size: 1.2rem;
+    margin: 0 0 0.3rem;
+}
+
+#yvf-modal-views {
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+
+
+/* ---------------------------
+   ERROR MESSAGE
+---------------------------- */
+.yvf-error {
+    color: #f88;
+    text-align: center;
+    font-size: 1rem;
+    padding: 1rem;
+}
