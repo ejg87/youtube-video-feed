@@ -1,51 +1,9 @@
-jQuery(document).ready(function ($) {
-    var $modal      = $('#yvf-modal');
-    var $player     = $('#yvf-player');
-    var $modalTitle = $('#yvf-modal-title');
-    var $modalViews = $('#yvf-modal-views');
-    var $wrapper    = $('#yvf-wrapper');
-    var $search     = $('#yvf-search');
+(function ($) {
+    let currentVideoId = null;
+    let searchTimeout  = null;
 
-    /* ----------------------
-     * Modal behaviour
-     * ---------------------- */
-
-    // Delegate so it still works after AJAX replacements
-    $(document).on('click', '.yvf-grid .yvf-item', function () {
-        var $item   = $(this);
-        var videoId = $item.data('video-id');
-        var title   = $item.data('title');
-        var views   = $item.data('views');
-
-        var embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
-        $player.attr('src', embedUrl);
-
-        $modalTitle.text(title || '');
-        if (views) {
-            $modalViews.text(views + ' views');
-        } else {
-            $modalViews.text('');
-        }
-
-        $modal.addClass('yvf-open');
-    });
-
-    $('.yvf-close, .yvf-modal-backdrop').on('click', function () {
-        $modal.removeClass('yvf-open');
-        $player.attr('src', '');
-    });
-
-    $(document).on('keyup', function (e) {
-        if (e.key === 'Escape') {
-            $modal.removeClass('yvf-open');
-            $player.attr('src', '');
-        }
-    });
-
-    /* ----------------------
-     * Helper: loading state
-     * ---------------------- */
     function setLoading(isLoading) {
+        const $wrapper = $('#yvf-wrapper');
         if (isLoading) {
             $wrapper.addClass('yvf-is-loading');
         } else {
@@ -53,86 +11,119 @@ jQuery(document).ready(function ($) {
         }
     }
 
-    /* ----------------------
-     * AJAX pagination
-     * ---------------------- */
+    function openModal(videoId, title, views) {
+        currentVideoId = videoId;
 
-    $(document).on('click', '.yvf-pagination a.yvf-page-link', function (e) {
-        e.preventDefault();
+        const src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1';
 
-        var $link  = $(this);
-        var page   = $link.data('page') || 1;
-        var token  = $link.data('token') || '';
+        $('#yvf-player').attr('src', src);
+        $('#yvf-modal-title').text(title || '');
+        $('#yvf-modal-views').text(views ? views + ' views' : '');
 
+        $('#yvf-modal').addClass('yvf-open');
+    }
+
+    function closeModal() {
+        $('#yvf-modal').removeClass('yvf-open');
+        $('#yvf-player').attr('src', '');
+        currentVideoId = null;
+    }
+
+    function loadPage(page, token) {
         setLoading(true);
 
         $.post(
             YVF.ajax_url,
             {
                 action: 'yvf_get_page',
-                nonce: YVF.nonce,
                 page: page,
-                token: token
+                token: token || ''
             }
         ).done(function (response) {
             if (response && response.success && response.data && response.data.html) {
-                $wrapper.html(response.data.html);
-
-                // Keep URL on the front-end page only, never admin-ajax
-                var newUrl = window.location.pathname + '?yvf_page=' + page;
-                window.history.pushState({ page: page }, '', newUrl);
-
-                $('html, body').animate(
-                    {
-                        scrollTop: $wrapper.offset().top - 50
-                    },
-                    300
-                );
+                $('#yvf-wrapper').html(response.data.html);
             } else {
-                console.error('Failed to load page', response);
+                console.error('Pagination error', response);
             }
         }).fail(function (xhr) {
             console.error('AJAX error', xhr);
         }).always(function () {
             setLoading(false);
         });
-    });
+    }
 
-    /* ----------------------
-     * AJAX search
-     * ---------------------- */
+    function performSearch(term) {
+        setLoading(true);
 
-    var searchTimeout = null;
+        $.post(
+            YVF.ajax_url,
+            {
+                action: 'yvf_search',
+                term: term || ''
+            }
+        ).done(function (response) {
+            if (response && response.success && response.data && response.data.html) {
+                $('#yvf-wrapper').html(response.data.html);
+            } else {
+                console.error('Search error', response);
+            }
+        }).fail(function (xhr) {
+            console.error('AJAX error', xhr);
+        }).always(function () {
+            setLoading(false);
+        });
+    }
 
-    $search.on('keyup', function () {
-        var term = $(this).val();
+    // Delegated handlers (content is replaced via AJAX)
+    $(document)
+        // open modal on video click
+        .on('click', '.yvf-grid .yvf-item', function (e) {
+            e.preventDefault();
+            const $item = $(this);
 
-        if (searchTimeout) {
-            clearTimeout(searchTimeout);
+            openModal(
+                $item.data('video-id'),
+                $item.data('title'),
+                $item.data('views')
+            );
+        })
+
+        // pagination
+        .on('click', '.yvf-page-link', function (e) {
+            e.preventDefault();
+
+            const $link = $(this);
+            const page  = parseInt($link.data('page'), 10) || 1;
+            const token = $link.data('token') || '';
+
+            loadPage(page, token);
+        })
+
+        // close modal
+        .on('click', '.yvf-close, .yvf-modal-backdrop', function () {
+            closeModal();
+        });
+
+    // Esc key closes modal
+    $(document).on('keyup', function (e) {
+        if (e.key === 'Escape') {
+            closeModal();
         }
-
-        searchTimeout = setTimeout(function () {
-            setLoading(true);
-
-            $.post(
-                YVF.ajax_url,
-                {
-                    action: 'yvf_search',
-                    nonce: YVF.nonce,
-                    term: term
-                }
-            ).done(function (response) {
-                if (response && response.success && response.data && response.data.html) {
-                    $wrapper.html(response.data.html);
-                    // We deliberately do NOT change the URL for search
-                } else {
-                    console.error('Search failed', response);
-                }
-            }).fail(function (xhr) {
-                console.error('AJAX error', xhr);
-            }).always(function () {
-                setLoading(false);
-            });
-        }, 300); // debounce 300ms
     });
-});
+
+    // Debounced search
+    $('#yvf-search').on('input', function () {
+        const term = $(this).val().trim();
+
+        clearTimeout(searchTimeout);
+
+        // Only search when 2+ chars, otherwise reset to page 1
+        searchTimeout = setTimeout(function () {
+            if (term.length >= 2) {
+                performSearch(term);
+            } else {
+                performSearch('');
+            }
+        }, 400);
+    });
+})(jQuery);
